@@ -7,17 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test-db": "node src/lib/test-db.mjs"
+    "test-db": "ts-node --project tsconfig.test.json src/lib/test-db.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.3.1",
-    "@prisma/extension-accelerate": "^1.2.1",
     "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/crypto-js": "^4.2.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/pg": "^8.11.13",
+    "@vercel/postgres": "^0.10.0",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "crypto-js": "^4.2.0",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.1.6",
-    "prisma": "^6.3.1",
+    "pg": "^8.14.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

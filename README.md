@@ -1,6 +1,6 @@
 # Ticketing System
 
-A modern ticketing system built with Next.js, Prisma, and TypeScript.
+A modern ticketing system built with Next.js and TypeScript.
 
 ## Features
 
@@ -8,14 +8,13 @@ A modern ticketing system built with Next.js, Prisma, and TypeScript.
 - Dark mode support
 - Responsive design
 - Password validation
-- PostgreSQL database integration with Prisma
+- PostgreSQL database integration
 - Modern UI with Tailwind CSS
 
 ## Tech Stack
 
 - Next.js 13+ with App Router
 - TypeScript
-- Prisma ORM
 - PostgreSQL
 - Tailwind CSS
 
@@ -35,13 +34,20 @@ npm install
 3. Set up environment variables:
 ```bash
 # Create a .env file and add your database URL
-DATABASE_URL="your-database-url-here"
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+JWT_SECRET="your-secret-key-here"
 ```
 
 4. Set up the database:
 ```bash
-npx prisma generate
-npx prisma db push
+# Create the users table in your PostgreSQL database
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 5. Run the development server:

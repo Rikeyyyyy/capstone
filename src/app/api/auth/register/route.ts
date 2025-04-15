@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { hash } from 'bcrypt';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 export async function POST(req: Request) {
   try {
@@ -13,52 +17,39 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user exists
+    const client = await pool.connect();
     try {
-      const exists = await prisma.user.findFirst({
-        where: { email }
-      });
+      // Check if user exists
+      const existsResult = await client.query(
+        'SELECT * FROM users WHERE email = $1',
+        [email]
+      );
 
-      if (exists) {
+      if (existsResult.rows.length > 0) {
         return NextResponse.json(
           { error: 'User already exists' },
           { status: 400 }
         );
       }
-    } catch (error) {
-      console.error('Error checking user existence:', error);
-      return NextResponse.json(
-        { error: 'Error checking user existence' },
-        { status: 500 }
-      );
-    }
 
-    // Create new user
-    try {
+      // Create new user
       const hashedPassword = await hash(password, 10);
+      const result = await client.query(
+        'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id',
+        [email, hashedPassword]
+      );
 
-      const user = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-        },
-      });
-
-      console.log('User created successfully:', user.id);
+      console.log('User created successfully:', result.rows[0].id);
 
       return NextResponse.json(
         { 
           message: 'User created successfully',
-          userId: user.id 
+          userId: result.rows[0].id 
         },
         { status: 201 }
       );
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return NextResponse.json(
-        { error: 'Error creating user in database' },
-        { status: 500 }
-      );
+    } finally {
+      client.release();
     }
   } catch (error) {
     console.error('Registration error:', error);

@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import Logo from '@/components/Logo';
 import { validatePassword } from '@/utils/validation';
 import { AUTH_CONFIG } from '@/constants/auth';
-import { THEME } from '@/constants/theme';
 
 export default function Login() {
   const router = useRouter();
@@ -21,29 +20,39 @@ export default function Login() {
     setIsLoading(true);
     setError('');
     
-    const validation = validatePassword(formData.password);
-    if (!validation.isValid) {
-      setError(validation.message);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      console.log('Starting login process for:', formData.email);
+      
+      const validation = validatePassword(formData.password);
+      if (!validation.isValid) {
+        console.log('Password validation failed:', validation.message);
+        setError(validation.message);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Sending login request...');
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           email: formData.email.trim(),
           password: formData.password
-        }),
-        credentials: 'include'
+        })
       });
 
+      console.log('Login response status:', response.status);
       const data = await response.json();
+      console.log('Login response data:', data);
 
       if (response.ok) {
+        console.log('Login successful, redirecting to dashboard');
         router.push(AUTH_CONFIG.ROUTES.DASHBOARD);
       } else {
+        console.error('Login failed:', data.error);
         throw new Error(data.error || 'Login failed');
       }
     } catch (err) {
@@ -56,9 +65,18 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] p-4 sm:p-8">
-      <div className="max-w-md w-full space-y-6 bg-[#171717] p-8 rounded-2xl shadow-2xl transition-all duration-300 ease-in-out hover:shadow-indigo-500/10 hover:translate-y-[-2px]">
+      <div className="max-w-md w-full space-y-6 bg-[#171717] p-8 rounded-2xl shadow-2xl">
         <div className="flex flex-col items-center">
-          <Logo />
+          <div className="flex justify-center items-center w-full mb-4">
+            <Image
+              src="/photoresource/logo-computama.png"
+              alt="Computama Logo"
+              width={200}
+              height={60}
+              priority
+              className="object-contain"
+            />
+          </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-white">
             Welcome Back
           </h2>
@@ -89,7 +107,7 @@ export default function Login() {
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm text-center bg-red-900/50 p-3 rounded-lg animate-shake">
+            <div className="text-red-400 text-sm text-center bg-red-900/50 p-3 rounded-lg">
               {error}
             </div>
           )}
@@ -107,7 +125,7 @@ export default function Login() {
         <div className="text-center">
           <Link 
             href={AUTH_CONFIG.ROUTES.REGISTER}
-            className="text-indigo-400 hover:text-indigo-300 font-medium transition-all duration-200 ease-in-out hover:underline transform hover:scale-[1.02]"
+            className="text-indigo-400 hover:text-indigo-300 font-medium"
           >
             Don't have an account? Register here
           </Link>
